@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: 'Basic VPC'
+
+Parameters:
+  CidrBlock:
+    Description: Address range for created VPC
+    Type: String
+    Default: 10.0.0.0/24
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref CidrBlock
+
+Outputs:
+  VPC:
+    Description: Id of created VPC
+    Value: !Ref VPC
+    Export:
+      Name: !Sub ${AWS::StackName}-VPC

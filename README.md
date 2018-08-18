@@ -4,5 +4,5 @@
 
 # Using
 
-`docker run -it <image_name> bash`
-`docker run -it <image_name> aws s3 ls`
+`docker run -v `pwd`:/cli -it <image_name> bash`
+`docker run -v `pwd`:/cli -it <image_name> aws s3 ls`

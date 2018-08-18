@@ -6,6 +6,7 @@ ARG AWS_REGION
 
 RUN mkdir -p /cli
 ADD . /cli
+WORKDIR /cli
 
 RUN /cli/setup_credentials.sh
 
