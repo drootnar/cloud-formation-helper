@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: 'Basic web server'
+
+Parameters:
+  Prefix:
+    Description: Prefix added to all resource names
+    Type: String
+    Default: course
+
+  KeyPair:
+    Description: KeyPair for EC2 instances
+    Type: String
+    Default: course-keyPair
+
+Resources:
+  WebServer:
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: ami-04681a1dbd79675a5
+      InstanceType: t2.micro
+      KeyName: !Ref KeyPair
+      SecurityGroupIds: 
+        - Fn::ImportValue: !Sub ${Prefix}-PublicSecurityGroup
+        - Fn::ImportValue: !Sub ${Prefix}-DebugSecurityGroup
+      SubnetId:
+        Fn::ImportValue: !Sub ${Prefix}-PublicSubnet
+      Tags:
+        - Key: Name
+          Value: !Sub ${Prefix}-WebServer
+  
+Outputs:
+  WebServer:
+    Description: Id of WebServer
+    Value: !Ref WebServer
+    Export:
+      Name: !Sub ${Prefix}-WebServer
+
+  WebServerPublicIp:
+    Description: Public IP of WebServer
+    Value: !GetAtt WebServer.PublicIp
+    Export:
+      Name: !Sub ${Prefix}-WebServerPublicIp

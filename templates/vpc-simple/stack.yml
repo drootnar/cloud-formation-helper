@@ -19,7 +19,7 @@ Parameters:
     Description: Ip range of stuff team
     Type: String
   Prefix:
-    Description: Preofix added to all resource names
+    Description: Prefix added to all resource names
     Type: String
     Default: course
 
@@ -30,7 +30,7 @@ Resources:
       CidrBlock: !Ref CidrBlock
       Tags:
         - Key: Name
-          Value: !Sub ${Prefix}-vpc
+          Value: !Sub ${Prefix}-VPC
 
   PublicSubnet:
     Type: AWS::EC2::Subnet
@@ -40,7 +40,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${Prefix}-public-subnet
+          Value: !Sub ${Prefix}-PublicSubnet
 
   PrivateSubnet:
     Type: AWS::EC2::Subnet
@@ -50,7 +50,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${Prefix}-private-subnet
+          Value: !Sub ${Prefix}-PrivateSubnet
 
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
@@ -58,7 +58,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${Prefix}-public-route-table
+          Value: !Sub ${Prefix}-PublicRouteTable
 
   RouteIpv4Internet:
     Type: AWS::EC2::Route
@@ -80,7 +80,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${Prefix}-private-route-table
+          Value: !Sub ${Prefix}-PrivateRouteTable
 
   PublicSubnetRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -110,7 +110,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${Prefix}-debug-security-group
+          Value: !Sub ${Prefix}-DebugSecurityGroup
 
   PublicSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -132,7 +132,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${Prefix}-public-security-group
+          Value: !Sub ${Prefix}-PublicSecurityGroup
 
   PrivateSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -142,7 +142,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${Prefix}-private-security-group
+          Value: !Sub ${Prefix}-PrivateSecurityGroup
 
   PrivateSecurityGroupIngressFromPubic:
     Type: AWS::EC2::SecurityGroupIngress
@@ -167,7 +167,7 @@ Resources:
     Properties: 
       Tags:
         - Key: Name
-          Value: !Sub ${Prefix}-internet-gateway
+          Value: !Sub ${Prefix}-InternetGateway
 
   InternetGatewayVPCAssociation:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -180,22 +180,40 @@ Outputs:
     Description: Id of created VPC
     Value: !Ref VPC
     Export:
-      Name: !Sub ${Prefix}-vpc
+      Name: !Sub ${Prefix}-VPC
 
   PublicSubnet:
     Description: Id of public subnet
     Value: !Ref PublicSubnet
     Export:
-      Name: !Sub ${Prefix}-public-subnet
+      Name: !Sub ${Prefix}-PublicSubnet
 
   PrivateSubnet:
     Description: Id of private subnet
     Value: !Ref PrivateSubnet
     Export:
-      Name: !Sub ${Prefix}-private-subnet
+      Name: !Sub ${Prefix}-PrivateSubnet
+
+  PublicSecurityGroup:
+    Description: Id of public security group
+    Value: !Ref PublicSecurityGroup
+    Export:
+      Name: !Sub ${Prefix}-PublicSecurityGroup
+
+  PrivateSecurityGroup:
+    Description: Id of private security group
+    Value: !Ref PrivateSecurityGroup
+    Export:
+      Name: !Sub ${Prefix}-PrivateSecurityGroup
+
+  DebugSecurityGroup:
+    Description: Id of debug security group
+    Value: !Ref DebugSecurityGroup
+    Export:
+      Name: !Sub ${Prefix}-DebugSecurityGroup
 
   InternetGateway:
     Description: Id of internet gateway
     Value: !Ref InternetGateway
     Export:
-      Name: !Sub ${Prefix}-internet-gateway
+      Name: !Sub ${Prefix}-InternetGateway

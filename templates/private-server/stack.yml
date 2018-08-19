@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: 'Basic private server'
+
+Parameters:
+  Prefix:
+    Description: Prefix added to all resource names
+    Type: String
+    Default: course
+
+  KeyPair:
+    Description: KeyPair for EC2 instances
+    Type: String
+    Default: course-keyPair
+
+Resources:
+  PrivateServer:
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: ami-04681a1dbd79675a5
+      InstanceType: t2.micro
+      KeyName: !Ref KeyPair
+      SecurityGroupIds: 
+        - Fn::ImportValue: !Sub ${Prefix}-PrivateSecurityGroup
+        - Fn::ImportValue: !Sub ${Prefix}-DebugSecurityGroup
+      SubnetId:
+        Fn::ImportValue: !Sub ${Prefix}-PrivateSubnet
+      Tags:
+        - Key: Name
+          Value: !Sub ${Prefix}-PrivateServer
+  
+Outputs:
+  PrivateServer:
+    Description: Id of PrivateServer
+    Value: !Ref PrivateServer
+    Export:
+      Name: !Sub ${Prefix}-PrivateServer
