@@ -6,17 +6,196 @@ Parameters:
   CidrBlock:
     Description: Address range for created VPC
     Type: String
-    Default: 10.0.0.0/24
+    Default: 10.0.0.0/16
+  PublicSubnetCidrBlock:
+    Description: Address range for public subnet
+    Type: String
+    Default: 10.0.1.0/24
+  PrivateSubnetCidrBlock:
+    Description: Address range for public subnet
+    Type: String
+    Default: 10.0.2.0/24
+  StuffIpRange:
+    Description: Ip range of stuff team
+    Type: String
+  Prefix:
+    Description: Preofix added to all resource names
+    Type: String
+    Default: course
 
 Resources:
   VPC:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: !Ref CidrBlock
+      Tags:
+        - Key: Name
+          Value: !Sub ${Prefix}-vpc
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: !Ref PublicSubnetCidrBlock
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${Prefix}-public-subnet
+
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: !Ref PrivateSubnetCidrBlock
+      MapPublicIpOnLaunch: false
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${Prefix}-private-subnet
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${Prefix}-public-route-table
+
+  RouteIpv4Internet:
+    Type: AWS::EC2::Route
+    Properties: 
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref PublicRouteTable
+
+  RouteIpv6Internet:
+    Type: AWS::EC2::Route
+    Properties: 
+      DestinationIpv6CidrBlock: ::/0
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref PublicRouteTable
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${Prefix}-private-route-table
+
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet
+
+  PrivateSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateSubnet
+
+  DebugSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupName: Debug security group
+      GroupDescription: Debug security group (ssh open)
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref StuffIpRange
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${Prefix}-debug-security-group
+
+  PublicSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupName: Public security group
+      GroupDescription: Public security group 
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${Prefix}-public-security-group
+
+  PrivateSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupName: Private security group
+      GroupDescription: Private security group 
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${Prefix}-private-security-group
+
+  PrivateSecurityGroupIngressFromPubic:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties: 
+      FromPort: -1
+      ToPort: -1
+      IpProtocol: -1
+      GroupId: !Ref PrivateSecurityGroup
+      SourceSecurityGroupId: !Ref PublicSecurityGroup
+
+  PrivateSecurityGroupIngressFromPrivate:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties: 
+      FromPort: -1
+      ToPort: -1
+      IpProtocol: -1
+      GroupId: !Ref PrivateSecurityGroup
+      SourceSecurityGroupId: !Ref PrivateSecurityGroup
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties: 
+      Tags:
+        - Key: Name
+          Value: !Sub ${Prefix}-internet-gateway
+
+  InternetGatewayVPCAssociation:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: 
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
 
 Outputs:
   VPC:
     Description: Id of created VPC
     Value: !Ref VPC
     Export:
-      Name: !Sub ${AWS::StackName}-VPC
+      Name: !Sub ${Prefix}-vpc
+
+  PublicSubnet:
+    Description: Id of public subnet
+    Value: !Ref PublicSubnet
+    Export:
+      Name: !Sub ${Prefix}-public-subnet
+
+  PrivateSubnet:
+    Description: Id of private subnet
+    Value: !Ref PrivateSubnet
+    Export:
+      Name: !Sub ${Prefix}-private-subnet
+
+  InternetGateway:
+    Description: Id of internet gateway
+    Value: !Ref InternetGateway
+    Export:
+      Name: !Sub ${Prefix}-internet-gateway
