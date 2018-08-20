@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: 'Network ACL for VPC'
+
+Parameters:
+  Prefix:
+    Description: Prefix added to all resource names
+    Type: String
+    Default: course
+
+Resources:
+  NetworkACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId:
+        Fn::ImportValue: !Sub ${Prefix}-VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${Prefix}-NetworkACL
+
+  IngressRule1:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      CidrBlock: 0.0.0.0/0
+      Egress: false
+      NetworkAclId: !Ref NetworkACL
+      PortRange:
+        From: 80
+        To: 80
+      Protocol: 6
+      RuleAction : allow
+      RuleNumber : 100
+
+  IngressRule2:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      CidrBlock: 0.0.0.0/0
+      Egress: false
+      NetworkAclId: !Ref NetworkACL
+      PortRange:
+        From: 22
+        To: 22
+      Protocol: 6
+      RuleAction : allow
+      RuleNumber : 200
+
+  EgressRule1:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      CidrBlock: 0.0.0.0/0
+      Egress: true
+      NetworkAclId: !Ref NetworkACL
+      PortRange:
+        From: 32768
+        To: 65535
+      Protocol: 6
+      RuleAction : allow
+      RuleNumber : 100
+
+  PublicSubnetNetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId:
+        Fn::ImportValue: !Sub ${Prefix}-PublicSubnet
+      NetworkAclId: !Ref NetworkACL
+
+  PrivateSubnetNetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId:
+        Fn::ImportValue: !Sub ${Prefix}-PrivateSubnet
+      NetworkAclId: !Ref NetworkACL
+  
+Outputs:
+  NetworkACL:
+    Description: Id of Network ACL
+    Value: !Ref NetworkACL
+    Export:
+      Name: !Sub ${Prefix}-NetworkACL
