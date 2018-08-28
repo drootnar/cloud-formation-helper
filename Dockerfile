@@ -8,8 +8,9 @@ RUN mkdir -p /cli
 ADD . /cli
 WORKDIR /cli
 
-RUN /cli/setup_credentials.sh
+ENV PATH="/cli/executable:${PATH}"
 
-RUN pip install awscli --upgrade
+RUN setup_credentials
+RUN pip install boto3 awscli --upgrade
 
 CMD bash

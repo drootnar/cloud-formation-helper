@@ -1,0 +1,6 @@
+#!/bin/bash
+
+SOURCE=$1
+DESTINATION=$2
+
+aws s3 sync $1 s3://$2 --quiet
