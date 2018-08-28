@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: 'Backup bucket'
+
+Parameters:
+  Prefix:
+    Description: Prefix added to all resource names
+    Type: String
+    Default: course
+  BackupBucketName:
+    Description: Name of backup bucket
+    Type: String
+    Default: backup-bucket
+  EncyptionKeyOwner:
+    Description: ARN of user who will be the owner of encryption key
+    Type: String
+
+Resources:
+  BackupBucket:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: !Ref BackupBucketName
+      LifecycleConfiguration:
+        Rules:
+        - AbortIncompleteMultipartUpload:
+            DaysAfterInitiation: 7
+          Status: Enabled
+        - NoncurrentVersionExpirationInDays: 7
+          Status: Enabled
+      VersioningConfiguration: {Status: Enabled}
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              KMSMasterKeyID: !Ref BackupBucketEncryptionKey
+              SSEAlgorithm: aws:kms
+      Tags:
+        - Key: Name
+          Value: !Sub ${Prefix}-BackupBucket
+        - Key: BucketName
+          Value: !Ref BackupBucketName
+
+  BackupBucketEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${Prefix}/cmk
+      TargetKeyId: !Ref BackupBucketEncryptionKey
+
+  BackupBucketEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: Backup bucket encryption key
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: 'Allow kamil.rogalski IAM'
+            Effect: 'Allow'
+            Principal:
+              AWS: !Ref EncyptionKeyOwner
+            Action:
+              - 'kms:*'
+            Resource: '*'
+      Tags:
+        - Key: Name
+          Value: !Sub ${Prefix}-BackupBucketEncryptionKey
+  
+Outputs:
+  BackupBucketArn:
+    Description: Arn of backup bucket
+    Value: !GetAtt BackupBucket.Arn
+    Export:
+      Name: !Sub ${Prefix}-BackupBucketArn
