@@ -53,7 +53,7 @@ Resources:
       KeyPolicy:
         Version: '2012-10-17'
         Statement:
-          - Sid: 'Allow kamil.rogalski IAM'
+          - Sid: 'Allow EncyptionKeyOwner IAM'
             Effect: 'Allow'
             Principal:
               AWS: !Ref EncyptionKeyOwner
