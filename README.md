@@ -5,5 +5,7 @@
 # Using
 
 `docker run -v `pwd`:/cli -it <image_name> bash`
+
 `docker run -v `pwd`:/cli -it <image_name> aws s3 ls`
+
 `docker run <image_name> sync_bucket <source_dir> <bucket_name>/<path>`
